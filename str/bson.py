@@ -1,15 +1,16 @@
 import struct
 
 
-
 def dumps(object):
+    if object == {}:
+        return b''
     string = b''
     # 先从e_list开始
     for k, v in object.items():
         # 元素的值的类型
         if type(v) is str:
             string = string + b'\x02' + packEName(k) + struct.pack("i", len(v) + 1) \
-                     + bytes(v,encoding='utf-8') + b'\x00'
+                     + bytes(v, encoding='utf-8') + b'\x00'
         elif type(v) is int:
             string = string + b'\x10' + packEName(k) + struct.pack("i", v)
         elif type(v) is dict:
@@ -42,6 +43,8 @@ TYPES = {
 
 
 def loads(string):
+    if string == b'':
+        return {}
     object = {}
     start = 4
     end = len(string)
@@ -106,4 +109,3 @@ object = {
 }
 
 assert (loads(dumps(object)) == object)
-
