@@ -2,7 +2,7 @@ import time
 
 
 class log:
-    def info(self, msg):
-        file = open("log.txt", "a+")
-        file.write(time.asctime() + msg)
-        file.close()
+    def info(msg):
+        with open("log.txt", "a+") as file:
+            cont = str(time.asctime()) + " " + str(msg) + " "
+            file.write(cont)

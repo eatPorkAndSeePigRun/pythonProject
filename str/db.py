@@ -1,5 +1,4 @@
 import sys
-import struct
 from bson import *
 
 if __name__ == "__main__":
