@@ -6,8 +6,10 @@ import time
 
 def socket_recv_n(socket, n):
     data = b''
-    while len(data) < n:
-        data += socket.recv(n-len(data))
+    length = 0
+    while length < n:
+        data += socket.recv(n-length)
+        length = len(data)
     return data
 
 
