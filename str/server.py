@@ -21,12 +21,12 @@ class serverThread(threading.Thread):
     def run(self):
         pic = str(int(time.time())) + ".jpg"
         # 文件长度
-        data = socket_recv_n(conn, 4)
+        data = socket_recv_n(self.socket, 4)
         fileSize = struct.unpack("i", data)[0]
         print("我是服务器端，要接收" + pic + "的大小为：", fileSize)
 
         # 文件内容
-        data = socket_recv_n(conn, fileSize)
+        data = socket_recv_n(self.socket, fileSize)
         with open("server" + pic, "wb") as file:
             file.write(data)
         print(pic + "接收完成，总共接收的大小：", len(data))
