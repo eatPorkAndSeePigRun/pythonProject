@@ -19,8 +19,8 @@ class TcpConnection:
     def start(self):
         self.stoped = True
         # self.xxx_thread = start thread with self.xxx_loop
-        self.recv_thread = threading.Thread(self.recv_loop())
-        self.send_thread = threading.Thread(self.send_loop())
+        self.recv_thread = threading.Thread(target = self.recv_loop)
+        self.send_thread = threading.Thread(target = self.send_loop)
         self.recv_thread.start()
         self.send_thread.start()
 
