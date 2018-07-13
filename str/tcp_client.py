@@ -19,4 +19,5 @@ class TcpClient:
 
 def new_tcp_client(ip, port, send_queue, recv_queue):
     c = TcpClient(ip, port, send_queue, recv_queue)
+    c.start()
     return c

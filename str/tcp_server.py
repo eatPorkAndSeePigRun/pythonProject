@@ -37,7 +37,6 @@ class TcpServer:
         while True:
             try:
                 # accept new connection from self.listen_socket.tcp_conntion = TcpConnection(...)
-                print("start")
                 conn, _ = self.listen_socket.accept()
                 bsworkQueue = queue.Queue(10)
                 brworkQueue = queue.Queue(10)

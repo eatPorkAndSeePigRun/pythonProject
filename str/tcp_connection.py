@@ -19,8 +19,8 @@ class TcpConnection:
     def start(self):
         self.stoped = True
         # self.xxx_thread = start thread with self.xxx_loop
-        self.recv_thread = threading.Thread(target = self.recv_loop)
-        self.send_thread = threading.Thread(target = self.send_loop)
+        self.recv_thread = threading.Thread(target=self.recv_loop)
+        self.send_thread = threading.Thread(target=self.send_loop)
         self.recv_thread.start()
         self.send_thread.start()
 
@@ -28,6 +28,8 @@ class TcpConnection:
         while self.stoped:
             try:
                 data = self.socket.recv(1024)
+                if data == b'':
+                    continue
                 self.send_binary(data)
             except BaseException as e:
                 print(e)
@@ -36,7 +38,9 @@ class TcpConnection:
     def send_loop(self):
         while self.stoped:
             try:
-                data = self.recv_queue.get()
+                data = self.send_queue.get()
+                if data == b'':
+                    continue
                 socket_send_n(self.socket, data)
             except BaseException as e:
                 print(e)
