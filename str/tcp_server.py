@@ -7,13 +7,16 @@ from tcp_client import *
 
 class TcpServer:
 
-    def __init__(self, ip, port):
+    def __init__(self, ip, port, on_connect, on_disconnect, on_recv_data):
         self.listen_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.listen_socket.bind((ip, port))
         self.listen_socket.listen(5)
         self.tcp_conntions = []
         self.accept_thread = None
         self.stoped = False
+        self.on_connect = on_connect
+        self.on_dis = on_disconnect
+        self.on_data  = on_recv_data
 
     def start(self):
         self.stoped = True
@@ -22,7 +25,7 @@ class TcpServer:
         self.accept_thread.start()
 
     def stop(self):
-        if self.stoped:
+        if not self.stoped:
             return
         self.stoped = False
         # quit self.accept_thread
@@ -38,18 +41,22 @@ class TcpServer:
             try:
                 # accept new connection from self.listen_socket.tcp_conntion = TcpConnection(...)
                 conn, _ = self.listen_socket.accept()
-                bsworkQueue = queue.Queue(10)
-                brworkQueue = queue.Queue(10)
-                tcp_conn = TcpConnection(conn, brworkQueue, bsworkQueue)
+                
+                tcp_conn = TcpConnection(conn, self.on_dis, self.on_data)
                 tcp_conn.start()
-                c = new_tcp_client("127.0.0.1", 9999, bsworkQueue, brworkQueue)
-                # self.tcp_connection.append(tcp_connection)
+                self.on_connect(tcp_conn)
+
+              
+              
                 self.tcp_conntions.append(tcp_conn)
             except socket.error as error:
                 break
 
+    
+        
 
-def new_tcp_server(ip, port):
-    s = TcpServer(ip, port)
+
+def new_tcp_server(ip, port, on_con, on_dis, on_data):
+    s = TcpServer(ip, port, on_con, on_dis, on_data)
     s.start()
     return s
