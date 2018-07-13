@@ -28,8 +28,11 @@ class TcpConnection:
         while self.stoped:
             try:
                 data = self.socket.recv(1024)
+                print("recv", self.socket, len(data))
+                # data  == "' should stop here TODO
                 if data == b'':
-                    continue
+                    print("recv nothing mean socket close", self.socket)
+                    break
                 self.send_binary(data)
             except BaseException as e:
                 print(e)
@@ -41,6 +44,7 @@ class TcpConnection:
                 data = self.send_queue.get()
                 if data == b'':
                     continue
+                print("send", self.socket, len(data))
                 socket_send_n(self.socket, data)
             except BaseException as e:
                 print(e)

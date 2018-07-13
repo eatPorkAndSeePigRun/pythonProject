@@ -7,7 +7,7 @@ def main():
     while True:
         try:
             time.sleep(1)
-            print("main loop sleep")
+            # print("main loop sleep")
         except KeyboardInterrupt as exp:
             break
     s.stop()
