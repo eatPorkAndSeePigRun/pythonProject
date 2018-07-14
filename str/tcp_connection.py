@@ -1,59 +1,85 @@
 import threading
-from util import *
 import queue
+import socket
+from log import *
 
 class TcpConnection:
 
-    def __init__(self, socket, on_dis, on_data):
+    def __init__(self, owner, socket, on_disconnect, on_data):
         self.socket = socket
+        self.socket.settimeout(1)
+        self.owner = owner
+        self.on_disconnect = on_disconnect
+        self.on_data = on_data
         self.recv_thread = None
         self.send_thread = None
+        self.thread_lock = threading.Lock()
         self.send_queue = queue.Queue(10)
-        
-        self.stoped = False
-        self.on_data = on_data
-        self.on_dis = on_dis
-        
+        self.is_open = True
+        self.is_close = True
+        log("TcpConnection __init__ %s %s" % (socket, self))
 
     def send_binary(self, binary):
-        # put binary to queue
+        if binary == "":
+            return
+        log("TcpConnection send_binary %s %s" % (binary, self))
         self.send_queue.put(binary)
 
-    def start(self):
+    def open(self):
+        if not self.is_close:
+            return
+        log("TcpConnection open %s" % self)
+        self.is_close = False
         self.recv_thread = threading.Thread(target=self.recv_loop)
         self.send_thread = threading.Thread(target=self.send_loop)
         self.recv_thread.start()
         self.send_thread.start()
 
     def recv_loop(self):
-        while not self.stoped:
+        log("TcpConnection recv_loop %s" % self)
+        while True:
             try:
-                print("recv beign", self.socket)
                 data = self.socket.recv(1024)
-                print("recv", self.socket, len(data))
-                # data  == "' should stop here TODO
                 if data == b'':
-                    print("recv nothing mean socket close", self.socket)
+                    log("TcpConnection recv_loop exception:recv nothing mean socket close %s" % (self))
+                    self.close()
                     break
                 self.on_data(self, data)
-            except BaseException as e:
-                print(e)
+            except socket.error as e:
+                log("TcpConnection recv_loop exception %s %s" % (e, self))
+                self.close()
                 break
+            except socket.timeout:
+                continue
+        log("TcpConnection recv_loop recv_thread exit %s" % self)
 
     def send_loop(self):
-        while not self.stoped:
+        log("TcpConnection send_loop %s" % self)
+        while not True:
             try:
                 data = self.send_queue.get()
-                if data == b'':
-                    continue
-                print("send", self.socket, len(data))
-                socket_send_n(self.socket, data)
-            except BaseException as e:
-                print(e)
+                self.send_n(data)
+            except socket.error as e:
+                log("TcpConnection send_loop exception %s %s" % (e, self))
+                self.close()
                 break
+        log("TcpConnection send_loop send_thread exit %s" % self)
 
-    def stop(self):
-        if not self.stoped:
+    def close(self):
+        self.thread_lock.acquire()
+        if not self.is_open:
             return
-        self.stoped = True
-        # uninit all of this connection close all resource of this connection
+        log("TcpConnection close %s" % self)
+        self.is_open = False
+        self.socket.close()
+        self.thread_lock.release()
+
+    def send_n(self, data):
+        log("TcpConnection send_n %s %s" % (data, self))
+        hasSize = 0
+        dataSize = len(data)
+        while not hasSize >= dataSize:
+            try:
+                hasSize += self.socket.send(data[hasSize:hasSize + 1024])
+            except socket.timeout:
+                continue
