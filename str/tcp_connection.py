@@ -55,10 +55,12 @@ class TcpConnection:
 
     def send_loop(self):
         log("TcpConnection send_loop %s" % self)
-        while not True:
+        while True:
             try:
-                data = self.send_queue.get()
-                self.send_n(data)
+                self.socket.send(b'')
+                if not self.send_queue.empty():
+                    data = self.send_queue.get()
+                    self.send_n(data)
             except socket.error as e:
                 log("TcpConnection send_loop exception %s %s" % (e, self))
                 break
@@ -74,6 +76,8 @@ class TcpConnection:
         self.thread_lock.release()
 
     def send_n(self, data):
+        if data == b'':
+            return
         log("TcpConnection send_n %s %s" % (data, self))
         hasSize = 0
         dataSize = len(data)
