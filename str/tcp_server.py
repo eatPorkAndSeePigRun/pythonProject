@@ -1,9 +1,9 @@
+import queue
 import socket
 import threading
-import queue
-from tcp_connection import *
-from tcp_client import *
 from log import *
+from tcp_client import *
+from tcp_connection import *
 
 
 class TcpServer:
@@ -49,7 +49,9 @@ class TcpServer:
                 self.on_connect(tcp_connection)
                 self.tcp_connections.append(tcp_connection)
             except socket.error as error:
+                log("TcpServer accept_loop exception %s %s" % (error, self))
                 break
+        log("TcpServer accept_loop exit %s" % self)
 
 
 def new_tcp_server(ip, port, on_connect, on_disconnect, on_data):

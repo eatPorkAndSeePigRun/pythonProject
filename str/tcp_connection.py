@@ -1,14 +1,15 @@
-import threading
 import queue
 import socket
+import threading
 from log import *
+
 
 class TcpConnection:
 
     def __init__(self, owner, socket, on_disconnect, on_data):
+        self.owner = owner
         self.socket = socket
         self.socket.settimeout(1)
-        self.owner = owner
         self.on_disconnect = on_disconnect
         self.on_data = on_data
         self.recv_thread = None
@@ -41,13 +42,12 @@ class TcpConnection:
             try:
                 data = self.socket.recv(1024)
                 if data == b'':
-                    log("TcpConnection recv_loop exception:recv nothing mean socket close %s" % (self))
+                    log("TcpConnection recv_loop exception:recv nothing mean socket close %s" % self)
                     self.close()
                     break
                 self.on_data(self, data)
             except socket.error as e:
                 log("TcpConnection recv_loop exception %s %s" % (e, self))
-                self.close()
                 break
             except socket.timeout:
                 continue
@@ -61,7 +61,6 @@ class TcpConnection:
                 self.send_n(data)
             except socket.error as e:
                 log("TcpConnection send_loop exception %s %s" % (e, self))
-                self.close()
                 break
         log("TcpConnection send_loop send_thread exit %s" % self)
 
