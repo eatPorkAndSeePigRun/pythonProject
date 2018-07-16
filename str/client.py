@@ -1,25 +1,58 @@
+import time
 import socket
-import struct
+import threading
+from log import *
 
 
-def socket_send_n(socket, data):
-    hasSize = 0
-    dataSize = len(data)
-    while not hasSize >= dataSize:
-        hasSize += socket.send(data[hasSize:hasSize + 1024])
+class ChatClient:
+    def __init__(self, ip, port):
+        self.ip = ip
+        self.port = port
+        self.opened = False
+        log("ChatClient __init__")
+
+    def open(self):
+        self.opened = True
+        log("ChatClient open")
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket.connect((self.ip, self.port))
+        self.recv_content_thread = threading.Thread(target=self.recv_content_loop)
+        self.recv_content_thread.start()
+        self.send_content_loop()
+
+    def close(self):
+        if not self.opened:
+            return
+        log("ChatClient close")
+        self.opened = False
+        self.socket.close()
+
+    def recv_content_loop(self):
+        log("ChatClient recv_loop start")
+        while self.opened:
+            msg = str(self.socket.recv(1024), encoding="utf-8")
+            print("\n<<<", msg)
+        log("ChatClient recv_loop end")
+
+    def send_content_loop(self):
+        log("ChatClient send_loop start")
+        while self.opened:
+            content = input(">>>")
+            self.socket.sendall(bytes(content, encoding="utf-8"))
+        log("ChatClient send_loop end")
 
 
-with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    s.connect(("127.0.0.1", 8080))
+def main():
+    chatClient = ChatClient("127.0.0.1", 8080)
     print("***客户端即将启动，正在连接服务器端***")
-    pic = "1.jpg"
-    # 文件长度
-    with open(pic, "rb") as file:
-        fileContent = file.read()
-    fileSize = len(fileContent)
-    print("我是客户端，要发送" + pic + "的大小为：", fileSize)
-    socket_send_n(s, struct.pack("i", fileSize))
+    chatClient.open()
+    while True:
+        try:
+            time.sleep(1)
+        except KeyboardInterrupt as e:
+            break
+    chatClient.close()
 
-    # 文件内容
-    socket_send_n(s, fileContent)
-    print(pic + "发送完成。")
+
+main()
+log("client main thread exit")

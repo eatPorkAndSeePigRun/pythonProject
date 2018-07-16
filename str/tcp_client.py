@@ -19,7 +19,7 @@ class TcpClient:
         pass
 
     # def open_with_thread():
-    #    start thread with self.epen
+    #    start thread with self.open
     #    return
 
     def open(self):

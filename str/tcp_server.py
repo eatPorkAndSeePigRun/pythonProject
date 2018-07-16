@@ -34,7 +34,6 @@ class TcpServer:
             return
         log("TcpServer close %s" % self)
         self.is_open = False
-        self.accept_thread.exit()
         self.listen_socket.close()
         for i in self.tcp_connections:
             i.close()
@@ -52,9 +51,3 @@ class TcpServer:
                 log("TcpServer accept_loop exception %s %s" % (error, self))
                 break
         log("TcpServer accept_loop exit %s" % self)
-
-
-def new_tcp_server(ip, port, on_connect, on_disconnect, on_data):
-    s = TcpServer(ip, port, on_connect, on_disconnect, on_data)
-    s.open()
-    return s

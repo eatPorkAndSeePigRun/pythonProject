@@ -6,12 +6,12 @@ from log import *
 
 class TcpConnection:
 
-    def __init__(self, owner, socket, on_disconnect, on_data):
+    def __init__(self, owner, socket, on_disconnect, on_recv_data):
         self.owner = owner
         self.socket = socket
         self.socket.settimeout(1)
         self.on_disconnect = on_disconnect
-        self.on_data = on_data
+        self.on_recv_data = on_recv_data
         self.recv_thread = None
         self.send_thread = None
         self.thread_lock = threading.Lock()
@@ -21,7 +21,7 @@ class TcpConnection:
         log("TcpConnection __init__ %s %s" % (socket, self))
 
     def send_binary(self, binary):
-        if binary == "":
+        if binary == b'':
             return
         log("TcpConnection send_binary %s %s" % (binary, self))
         self.send_queue.put(binary)
@@ -45,12 +45,12 @@ class TcpConnection:
                     log("TcpConnection recv_loop exception:recv nothing mean socket close %s" % self)
                     self.close()
                     break
-                self.on_data(self, data)
+                self.on_recv_data(data)
+            except socket.timeout:
+                continue
             except socket.error as e:
                 log("TcpConnection recv_loop exception %s %s" % (e, self))
                 break
-            except socket.timeout:
-                continue
         log("TcpConnection recv_loop recv_thread exit %s" % self)
 
     def send_loop(self):
