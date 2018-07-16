@@ -30,15 +30,22 @@ class ChatClient:
     def recv_content_loop(self):
         log("ChatClient recv_loop start")
         while self.opened:
-            msg = str(self.socket.recv(1024), encoding="utf-8")
-            print("\n<<<", msg)
+            try:
+                msg = str(self.socket.recv(1024), encoding="utf-8")
+                print("\n<<<", msg)
+            except socket.error as e:
+                log("ChatClient recv_content_loop exception %s %s" % (e, self))
+                break
         log("ChatClient recv_loop end")
 
     def send_content_loop(self):
         log("ChatClient send_loop start")
         while self.opened:
-            content = input(">>>")
-            self.socket.sendall(bytes(content, encoding="utf-8"))
+            try:
+                content = input(">>>")
+                self.socket.sendall(bytes(content, encoding="utf-8"))
+            except KeyboardInterrupt as e:
+                break
         log("ChatClient send_loop end")
 
 
