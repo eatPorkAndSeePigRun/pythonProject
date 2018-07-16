@@ -45,7 +45,7 @@ class TcpConnection:
                     log("TcpConnection recv_loop exception:recv nothing mean socket close %s" % self)
                     self.close()
                     break
-                self.on_recv_data(data)
+                self.on_recv_data(self, data)
             except socket.timeout:
                 continue
             except socket.error as e:
