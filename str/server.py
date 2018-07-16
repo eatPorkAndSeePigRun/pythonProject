@@ -12,7 +12,7 @@ class ChatServer:
     def on_disconnect(self):
         pass
 
-    def on_recv_data(self, tcp_connection,data):
+    def on_recv_data(self, tcp_connection, data):
         for i in self.tcp_server.tcp_connections:
             if i != tcp_connection:
                 i.send_binary(data)
