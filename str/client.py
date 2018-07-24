@@ -33,6 +33,7 @@ class ChatClient:
             try:
                 msg = str(self.socket.recv(1024), encoding="utf-8")
                 print("\n<<<", msg)
+                print(">>>")
             except socket.error as e:
                 log("ChatClient recv_content_loop exception %s %s" % (e, self))
                 break
