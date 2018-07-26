@@ -44,10 +44,23 @@ class ChatClient:
         while self.opened:
             try:
                 content = input(">>>")
-                self.socket.sendall(bytes(content, encoding="utf-8"))
+                self.send_n(bytes(content, encoding="utf-8") + b'\x00')
             except KeyboardInterrupt as e:
                 break
         log("ChatClient send_loop end")
+
+    def send_n(self, data):
+        if data == b'':
+            return
+        log("ChatClient send_n %s %s" % (data, self))
+        hasSize = 0
+        dataSize = len(data)
+        while not hasSize >= dataSize:
+            try:
+                hasSize += self.socket.send(data[hasSize:hasSize + 1])
+                time.sleep(1)
+            except socket.timeout:
+                continue
 
 
 def main():
